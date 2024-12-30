@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: bwe-assistant
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_ASSISTANT_ID
+        sync: false
+      - key: OPENAI_VECTOR_STORE_ID
+        sync: false
+    healthCheckPath: /health
+    numInstances: 1
+    plan: free

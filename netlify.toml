@@ -1,0 +1,30 @@
+[build]
+  command = """
+    curl -o python.tar.gz https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz && \
+    tar xzf python.tar.gz && \
+    cd Python-3.9.7 && \
+    ./configure --prefix=/usr/local && \
+    make && \
+    make install && \
+    cd .. && \
+    pip3 install -r requirements.txt
+  """
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[plugins]]
+  package = "@netlify/plugin-python"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/app"
+  status = 200
+  force = true
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+  PIPENV_VENV_IN_PROJECT = "1"

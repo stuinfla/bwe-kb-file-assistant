@@ -1,0 +1,14 @@
+{
+  "name": "bwe-assistant-analyzer",
+  "version": "1.0.0",
+  "description": "BWE Assistant Analyzer",
+  "scripts": {
+    "start": "python3 app.py",
+    "build": "pip install -r requirements.txt"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "path": "^0.12.7",
+    "fs": "0.0.1-security"
+  }
+}
