@@ -33,14 +33,9 @@ CORS(app)  # Enable CORS for all routes
 app.logger.disabled = True
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_key')
 
-# Configure app for Vercel environment
-IS_VERCEL = os.environ.get('VERCEL') == '1'
-if IS_VERCEL:
-    UPLOAD_FOLDER = '/tmp'
-    CATEGORIES_FILE = '/tmp/categories.json'
-else:
-    UPLOAD_FOLDER = 'uploads'
-    CATEGORIES_FILE = 'categories.json'
+# Configure app paths
+UPLOAD_FOLDER = 'uploads'
+CATEGORIES_FILE = 'categories.json'
 
 # Create upload folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -851,9 +846,5 @@ def internal_error(error):
     return render_template('index.html', error="Internal server error"), 500
 
 if __name__ == '__main__':
-    # For local development
-    if os.environ.get('NETLIFY') != 'true':
-        port = int(os.environ.get('PORT', 5002))
-        app.run(host='0.0.0.0', port=port, debug=True)
-    else:
-        app.run()
+    port = int(os.environ.get('PORT', 5002))
+    app.run(host='0.0.0.0', port=port)
