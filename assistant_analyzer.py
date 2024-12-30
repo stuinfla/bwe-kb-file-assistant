@@ -35,15 +35,10 @@ class AssistantAnalyzer:
             
             # Initialize OpenAI client
             try:
-                # Set API key
-                openai.api_key = api_key
-                
-                # Create client
-                self.client = openai
-                
+                self.client = openai.OpenAI(api_key=api_key)
                 # Test the connection
-                models = self.client.Model.list()
-                logger.info(f"Successfully connected to OpenAI API")
+                self.client.models.list()
+                logger.info("Successfully connected to OpenAI API")
             except Exception as e:
                 logger.error(f"Failed to connect to OpenAI API: {str(e)}")
                 self.limited_mode = True
@@ -119,20 +114,6 @@ class AssistantAnalyzer:
                     'created_at': '2023-11-01',
                     'bytes': 1024,
                     'id': 'file-AelwhTKBuYAmzcCTJGgySAzI'
-                },
-                {
-                    'filename': 'Maintenance_Report_2023-12.pdf',
-                    'purpose': 'assistants',
-                    'created_at': '2023-12-15',
-                    'bytes': 2048,
-                    'id': 'file-BwpXdzFVD9MG5StLuvD4mn5f'
-                },
-                {
-                    'filename': 'Emergency_Plan_2023.pdf',
-                    'purpose': 'assistants',
-                    'created_at': '2023-12-01',
-                    'bytes': 3072,
-                    'id': 'file-YRJiDnZakMCHoAcbFPAiv7n9'
                 }
             ]
             logger.info(f"Running in limited mode. Returning {len(sample_files)} sample files.")
@@ -140,7 +121,7 @@ class AssistantAnalyzer:
             
         try:
             # List all files
-            files = self.client.File.list()
+            files = self.client.files.list()
             
             # Filter for files associated with assistants
             files_info = []
@@ -153,20 +134,6 @@ class AssistantAnalyzer:
                         'bytes': file.bytes,
                         'id': file.id
                     })
-            
-            # Group files by prefix to find sequences
-            files_by_prefix = defaultdict(list)
-            for file in files_info:
-                # Extract prefix (e.g., "Budget" from "Budget_2023-06.pdf")
-                prefix = re.split(r'[_\s-]', file['filename'])[0]
-                files_by_prefix[prefix].append(file)
-            
-            # Find gaps in sequences
-            gaps = self.find_gaps_in_sequence(files_by_prefix)
-            if gaps:
-                logger.warning("Found gaps in file sequences:")
-                for gap in gaps:
-                    logger.warning(f"Missing {gap['prefix']} for {gap['missing_date']}")
             
             # Sort files chronologically
             files_info.sort(key=lambda x: datetime.strptime(x['created_at'], '%Y-%m-%d'))
@@ -195,22 +162,23 @@ class AssistantAnalyzer:
         try:
             # Upload file
             with open(file_path, 'rb') as file:
-                uploaded_file = self.client.File.create(
+                uploaded_file = self.client.files.create(
                     file=file,
                     purpose='assistants'
                 )
             
-            # Attach to assistant
-            self.client.AssistantFile.create(
-                assistant_id=self.assistant_id,
-                file_id=uploaded_file.id
-            )
-            
-            logger.info(f"Successfully uploaded file: {file_path}")
-            return uploaded_file
+            # Add file to assistant
+            if uploaded_file:
+                logger.info(f"File uploaded successfully: {uploaded_file.id}")
+                self.client.beta.assistants.files.create(
+                    assistant_id=self.assistant_id,
+                    file_id=uploaded_file.id
+                )
+                return uploaded_file.id
+            return None
         except Exception as e:
             logger.error(f"Error uploading file: {str(e)}")
-            raise
+            return None
 
     def delete_file(self, file_id):
         """Delete a file from the assistant."""
@@ -219,37 +187,19 @@ class AssistantAnalyzer:
             return False
             
         try:
-            # First check if the file exists
-            try:
-                self.client.File.retrieve(file_id)
-            except Exception as e:
-                logger.error(f"File {file_id} not found in OpenAI: {str(e)}")
-                return False
-
-            # First try to remove from assistant
-            try:
-                self.client.AssistantFile.delete(
-                    assistant_id=self.assistant_id,
-                    file_id=file_id
-                )
-                logger.info(f"Removed file {file_id} from assistant")
-            except Exception as e:
-                logger.error(f"Error removing file from assistant: {str(e)}")
-                # Continue to delete the file even if removing from assistant fails
-                
+            # First remove from assistant
+            self.client.beta.assistants.files.delete(
+                assistant_id=self.assistant_id,
+                file_id=file_id
+            )
+            
             # Then delete the file itself
-            try:
-                self.client.File.delete(file_id)
-                logger.info(f"Deleted file {file_id} from OpenAI")
-            except Exception as e:
-                logger.error(f"Error deleting file from OpenAI: {str(e)}")
-                return False
+            self.client.files.delete(file_id)
             
             logger.info(f"Successfully deleted file: {file_id}")
             return True
-            
         except Exception as e:
-            logger.error(f"Error in delete_file: {str(e)}")
+            logger.error(f"Error deleting file: {str(e)}")
             return False
 
     def analyze_files(self):
