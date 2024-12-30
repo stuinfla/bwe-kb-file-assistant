@@ -123,10 +123,14 @@ class AssistantAnalyzer:
             # List all files
             files = self.client.files.list()
             
+            # Get assistant to check its files
+            assistant = self.client.beta.assistants.retrieve(self.assistant_id)
+            assistant_file_ids = set(assistant.file_ids)
+            
             # Filter for files associated with assistants
             files_info = []
             for file in files.data:
-                if file.purpose == "assistants":
+                if file.purpose == "assistants" and file.id in assistant_file_ids:
                     files_info.append({
                         'filename': file.filename,
                         'purpose': file.purpose,
