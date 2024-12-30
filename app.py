@@ -31,7 +31,6 @@ cli.show_server_banner = lambda *x: None
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 app.logger.disabled = True
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_secret_key')
 
 # Configure app paths
 UPLOAD_FOLDER = 'uploads'
