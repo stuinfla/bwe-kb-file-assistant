@@ -391,7 +391,7 @@ def verify_categories_integrity():
             logger.error("Cannot verify categories: OpenAI analyzer not initialized")
             return False
             
-        files = analyzer.get_vector_store_files()
+        files = analyzer.get_file_list()
         openai_file_ids = {f['id'] for f in files}
         category_file_ids = set(file_categories.keys())
         
@@ -540,7 +540,7 @@ def update_category():
         if not analyzer:
             return jsonify({'success': False, 'error': 'Assistant not initialized'}), 500
             
-        files = analyzer.get_vector_store_files()
+        files = analyzer.get_file_list()
         file_exists = any(f['id'] == file_id for f in files)
         if not file_exists:
             return jsonify({'success': False, 'error': f'File not found: {file_id}'}), 404
@@ -582,7 +582,7 @@ def index(category=None):
                                 error="OpenAI configuration error. The application will work in limited mode.")
         
         # Get all files from OpenAI
-        files = analyzer.get_vector_store_files() if analyzer else []
+        files = analyzer.get_file_list() if analyzer else []
         
         # Organize files by category
         for file in files:
@@ -803,7 +803,7 @@ def delete_file(file_id):
 @app.route('/debug/files')
 def debug_files():
     try:
-        files = analyzer.get_vector_store_files()
+        files = analyzer.get_file_list()
         return jsonify({
             'files': [{
                 'filename': f['filename'],
@@ -832,7 +832,7 @@ def search_files():
             return jsonify({'success': False, 'error': 'Search is not available'}), 500
             
         # Get all files and their categories
-        all_files = analyzer.get_vector_store_files()
+        all_files = analyzer.get_file_list()
         _, file_categories = load_categories()
         
         # Search through files
