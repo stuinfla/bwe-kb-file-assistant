@@ -47,21 +47,28 @@
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">Document Categories</h5>
                 <small>All documents loaded in the chatbot</small>
+                <div class="total-files">
+                    Total Files: <strong>{{ total_files }}</strong>
+                    {% if last_file_date %}
+                    <br>
+                    <small>Last file added: {{ last_file_date }}</small>
+                    {% endif %}
+                </div>
             </div>
             <div class="list-group list-group-flush">
                 {% for cat in all_categories %}
-                <div class="list-group-item category-item" 
+                <div class="list-group-item category-item {% if cat == selected_category %}selected{% endif %}" 
                      data-category="{{ cat }}"
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)"
                      ondrop="handleDrop(event, '{{ cat }}')"
                      onclick="selectCategory('{{ cat }}')">
-                    <div class="d-flex justify-content-between align-items-center {% if cat == selected_category %}active{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <i class="fas fa-folder{% if cat == selected_category %}-open{% endif %} me-2"></i>
                             {{ cat }}
                         </div>
-                        <span class="badge {% if cat == selected_category %}bg-light text-dark{% else %}bg-primary{% endif %} rounded-pill ms-2">
+                        <span class="badge bg-primary rounded-pill ms-2">
                             {{ categories[cat]|length }}
                         </span>
                     </div>
@@ -397,7 +404,7 @@ document.getElementById('searchInput').addEventListener('keypress', function(eve
     background-color: #f8f9fa;
 }
 
-.category-item.active {
+.category-item.selected {
     background-color: #e9ecef;
 }
 

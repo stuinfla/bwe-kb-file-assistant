@@ -583,6 +583,8 @@ def index(category=None):
         
         # Get all files from OpenAI
         files = analyzer.get_file_list() if analyzer else []
+        logger.info(f"Retrieved {len(files)} files from OpenAI")
+        logger.info(f"Sample file data: {files[0] if files else 'No files'}")
         
         # Organize files by category
         for file in files:
@@ -614,11 +616,49 @@ def index(category=None):
         if category and category not in all_categories:
             return redirect(url_for('index'))
         
+        # Calculate total files and get last file date
+        total_files = sum(len(files) for files in categories.values())
+        last_file_date = None
+        if files:
+            try:
+                # Get all created_at timestamps
+                timestamps = []
+                for file in files:
+                    created_at = file.get('created_at')
+                    if created_at:
+                        logger.info(f"Found created_at: {created_at} for file {file.get('filename')}")
+                        timestamps.append(created_at)
+                
+                if timestamps:
+                    # Get the most recent timestamp
+                    latest_timestamp = max(timestamps)
+                    logger.info(f"Latest timestamp: {latest_timestamp}")
+                    
+                    # Convert to integer if it's a string
+                    if isinstance(latest_timestamp, str):
+                        try:
+                            latest_timestamp = int(float(latest_timestamp))
+                            logger.info(f"Converted timestamp: {latest_timestamp}")
+                        except (ValueError, TypeError) as e:
+                            logger.error(f"Could not convert timestamp: {latest_timestamp}, error: {str(e)}")
+                            latest_timestamp = None
+                    
+                    # Format the date
+                    if latest_timestamp:
+                        last_file_date = datetime.fromtimestamp(latest_timestamp).strftime('%Y-%m-%d')
+                        logger.info(f"Final last_file_date: {last_file_date}")
+            except Exception as e:
+                logger.error(f"Error getting last file date: {str(e)}")
+                logger.exception(e)
+        
+        logger.info(f"Rendering template with last_file_date: {last_file_date}")
         return render_template('index.html', 
                              categories=categories,
-                             all_categories=all_categories,
+                             all_categories=sorted(all_categories),
                              selected_category=category,
-                             gaps=gaps)
+                             gaps=gaps,
+                             total_files=total_files,
+                             last_file_date=last_file_date)
     except Exception as e:
         logger.error(f"Error in index route: {str(e)}")
         return render_template('index.html', categories={}, error=str(e))

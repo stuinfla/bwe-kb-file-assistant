@@ -169,13 +169,13 @@ class AssistantAnalyzer:
                     assistant_files.append({
                         'filename': file.filename,
                         'purpose': file.purpose,
-                        'created_at': datetime.fromtimestamp(file.created_at).strftime('%Y-%m-%d'),
+                        'created_at': file.created_at,
                         'bytes': file.bytes,
                         'id': file.id
                     })
             
             # Sort files chronologically
-            assistant_files.sort(key=lambda x: datetime.strptime(x['created_at'], '%Y-%m-%d'))
+            assistant_files.sort(key=lambda x: x['created_at'], reverse=True)
             
             logger.info(f"Found {len(assistant_files)} files associated with assistant")
             return assistant_files
