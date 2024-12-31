@@ -2,6 +2,25 @@
 
 A sophisticated document management system built specifically for BWE (Building and Work Environment) documentation. This application helps organize, categorize, and manage building-related documents using OpenAI's intelligent categorization.
 
+## Resources and Configuration
+
+### OpenAI Integration
+This application uses the following OpenAI resources:
+- Assistant ID: asst_pvAYFhGmPmIDtv2B7jVs8r1g
+- Vector Store ID: file-qwZcKqbTWnqVcQPCGPqQIZUx
+- API Key: [Set in environment variable]
+
+### Environment Variables
+```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your_key
+OPENAI_ASSISTANT_ID=asst_pvAYFhGmPmIDtv2B7jVs8r1g
+OPENAI_VECTOR_STORE_ID=file-qwZcKqbTWnqVcQPCGPqQIZUx
+
+# Server Configuration
+PORT=5002  # Default port, overridden by Railway in production
+```
+
 ## Deployment
 
 This application uses automated deployment via Railway.app with GitHub integration.
@@ -42,8 +61,8 @@ This application uses automated deployment via Railway.app with GitHub integrati
 - **Environment Variables**:
   ```
   OPENAI_API_KEY=your_key
-  OPENAI_ASSISTANT_ID=your_assistant_id
-  OPENAI_VECTOR_STORE_ID=your_vector_store_id
+  OPENAI_ASSISTANT_ID=asst_pvAYFhGmPmIDtv2B7jVs8r1g
+  OPENAI_VECTOR_STORE_ID=file-qwZcKqbTWnqVcQPCGPqQIZUx
   PORT=auto_assigned_by_railway
   ```
 
@@ -115,8 +134,8 @@ This application uses automated deployment via Railway.app with GitHub integrati
 ### Required Environment Variables
 ```
 OPENAI_API_KEY=your_api_key
-OPENAI_ASSISTANT_ID=your_assistant_id
-OPENAI_VECTOR_STORE_ID=your_vector_store_id
+OPENAI_ASSISTANT_ID=asst_pvAYFhGmPmIDtv2B7jVs8r1g
+OPENAI_VECTOR_STORE_ID=file-qwZcKqbTWnqVcQPCGPqQIZUx
 ```
 
 ## Maintenance
