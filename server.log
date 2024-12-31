@@ -1,0 +1,125 @@
+2024-12-31 03:39:27,349 - __main__ - INFO - API Key present: Yes
+2024-12-31 03:39:27,349 - __main__ - INFO - Assistant ID: asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:27,349 - __main__ - INFO - Vector Store ID: vs_oW91rqJULkOhC5yAtLlTDJXB
+2024-12-31 03:39:27,349 - assistant_analyzer - INFO - Initializing OpenAI client...
+2024-12-31 03:39:27,374 - assistant_analyzer - INFO - Using Assistant ID: asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:27,374 - assistant_analyzer - INFO - Using Vector Store ID: vs_oW91rqJULkOhC5yAtLlTDJXB
+2024-12-31 03:39:28,009 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/models "HTTP/1.1 200 OK"
+2024-12-31 03:39:28,010 - assistant_analyzer - INFO - Successfully connected to OpenAI API
+2024-12-31 03:39:28,136 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:28,624 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:28,627 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:28,869 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:29,005 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:29,007 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:29,008 - __main__ - INFO - Category verification complete
+2024-12-31 03:39:29,008 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:29,588 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:29,588 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:29,897 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:30,035 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:30,036 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:32,128 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:32,613 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:32,614 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:32,879 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:33,010 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:33,011 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:33,012 - __main__ - INFO - Category verification complete
+2024-12-31 03:39:33,012 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:33,469 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:33,469 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:33,762 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:33,898 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:33,899 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:37,573 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:38,002 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:38,003 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:38,242 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:38,382 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:38,383 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:38,384 - __main__ - INFO - Category verification complete
+2024-12-31 03:39:38,384 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:38,795 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:38,796 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:38,905 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:39,113 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:39,255 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:39,256 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:39,467 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:39,468 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:39,718 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:39,849 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:39,849 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:39,850 - __main__ - INFO - Category verification complete
+2024-12-31 03:39:39,850 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:40,458 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:40,458 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:40,691 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:40,826 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:40,826 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:45,836 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:46,586 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:46,587 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:46,957 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:47,099 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:47,100 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:47,101 - __main__ - INFO - Category verification complete
+2024-12-31 03:39:47,101 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:47,640 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:47,640 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:47,884 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:48,025 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:48,026 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:53,036 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:53,501 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:53,502 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:53,713 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:53,853 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:53,854 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:53,854 - __main__ - INFO - Category verification complete
+2024-12-31 03:39:53,855 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:39:54,241 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:39:54,242 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:39:54,447 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:39:54,522 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:39:54,523 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:39:59,535 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:40:00,186 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:40:00,187 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:40:00,431 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:40:00,569 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:40:00,570 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:40:00,571 - __main__ - INFO - Category verification complete
+2024-12-31 03:40:00,571 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:40:01,127 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:40:01,128 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:40:01,390 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:40:01,525 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:40:01,525 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:40:06,535 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:40:07,045 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:40:07,045 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:40:07,251 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:40:07,388 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:40:07,388 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:40:07,389 - __main__ - INFO - Category verification complete
+2024-12-31 03:40:07,389 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:40:07,929 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:40:07,929 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:40:08,138 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:40:08,274 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:40:08,274 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:40:13,284 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:40:13,750 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:40:13,750 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:40:14,195 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:40:14,331 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:40:14,331 - assistant_analyzer - INFO - Found 125 files associated with assistant
+2024-12-31 03:40:14,332 - __main__ - INFO - Category verification complete
+2024-12-31 03:40:14,332 - assistant_analyzer - INFO - Retrieving assistant asst_pvAYFhGmPmIDtv2B7jVs8r1g
+2024-12-31 03:40:14,806 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 03:40:14,806 - assistant_analyzer - INFO - Retrieving file list from OpenAI
+2024-12-31 03:40:15,089 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 03:40:15,229 - assistant_analyzer - INFO - Retrieved 193 total files from OpenAI
+2024-12-31 03:40:15,229 - assistant_analyzer - INFO - Found 125 files associated with assistant

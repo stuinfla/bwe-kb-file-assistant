@@ -2,6 +2,28 @@
 
 A sophisticated document management system built specifically for BWE (Building and Work Environment) documentation. This application helps organize, categorize, and manage building-related documents using OpenAI's intelligent categorization.
 
+## Deployment
+
+This application is deployed on Railway.app via Git integration.
+
+### Deployment Steps
+1. Push code to GitHub repository
+2. Connect GitHub repository to Railway.app
+3. Railway automatically detects Python environment and builds
+4. Environment variables are set in Railway dashboard:
+   - OPENAI_API_KEY
+   - OPENAI_ASSISTANT_ID
+   - OPENAI_VECTOR_STORE_ID
+   - PORT (set by Railway automatically)
+
+### Local Development
+1. Clone the repository
+2. Create virtual environment: `python3 -m venv venv`
+3. Activate virtual environment: `source venv/bin/activate`
+4. Install requirements: `pip install -r requirements.txt`
+5. Create .env file with required environment variables
+6. Run server: `python3 manage_server.py`
+
 ## Features
 
 ### 1. Intelligent Document Management
@@ -68,57 +90,21 @@ OPENAI_ASSISTANT_ID=your_assistant_id
 OPENAI_VECTOR_STORE_ID=your_vector_store_id
 ```
 
-### Installation
-1. Clone the repository
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-npm install  # for Netlify deployment
-```
+## Maintenance
 
-### Local Development
-Run the application locally:
-```bash
-python3 manage_server.py
-```
+### Logging
+- Application logs are available in Railway.app dashboard
+- Local development logs in app.log and server.log
 
-The server will:
-- Auto-detect available ports
-- Kill any conflicting processes
-- Launch browser automatically
-- Verify successful startup
+### Monitoring
+- Railway.app provides built-in monitoring
+- Health checks every 5 seconds
+- Automatic restart on failure
 
-## Deployment to Netlify
-
-### Prerequisites
-1. Install Netlify CLI:
-```bash
-npm install -g netlify-cli
-```
-
-2. Login to Netlify:
-```bash
-netlify login
-```
-
-### Environment Setup
-Set these variables in Netlify dashboard:
-- `OPENAI_API_KEY`
-- `OPENAI_ASSISTANT_ID`
-- `OPENAI_VECTOR_STORE_ID`
-
-### Deployment Steps
-1. Initialize Netlify site:
-```bash
-netlify init
-```
-
-2. Deploy to production:
-```bash
-netlify deploy --prod
-```
-
-Access the site at: https://app.netlify.com/teams/sikerr/sites
+### Updates
+1. Make changes locally and test
+2. Commit and push to GitHub
+3. Railway automatically rebuilds and deploys
 
 ## Security Features
 - Secure file handling

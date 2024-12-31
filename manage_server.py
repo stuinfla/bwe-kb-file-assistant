@@ -19,6 +19,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Configure Flask logging to use our logger
+class FlaskLogFilter(logging.Filter):
+    def filter(self, record):
+        return not record.name.startswith('werkzeug')
+
+flask_log_handler = logging.StreamHandler()
+flask_log_handler.addFilter(FlaskLogFilter())
+flask_log_handler.setLevel(logging.INFO)
+
+logging.getLogger('flask').addHandler(flask_log_handler)
+logging.getLogger('flask').setLevel(logging.INFO)
+
 class ServerManager:
     def __init__(self, port=5002, startup_timeout=10, max_retries=3):
         self.port = port
@@ -121,7 +133,7 @@ class ServerManager:
                 # Check if server responds
                 response = requests.get(f"http://127.0.0.1:{self.port}")
                 if response.status_code != 200:
-                    logger.warning(f"Server responded with status code {response.status_code}")
+                    logger.info(f"Server responded with status code {response.status_code}")
                     time.sleep(retry_delay)
                     continue
 
@@ -132,13 +144,13 @@ class ServerManager:
                 error_alert = soup.find('div', class_='alert-warning')
                 if error_alert:
                     error_message = error_alert.get_text(strip=True)
-                    logger.error(f"Application error detected: {error_message}")
+                    logger.info(f"Application message: {error_message}")
                     return False
 
                 # Check if categories are loaded
                 category_items = soup.find_all('div', class_='category-item')
                 if not category_items:
-                    logger.error("No categories found in the response")
+                    logger.info("No categories found in the response")
                     return False
 
                 # Check if any categories have files
@@ -146,19 +158,19 @@ class ServerManager:
                 total_files = sum(file_counts)
                 
                 if total_files == 0:
-                    logger.error("No files found in any category. Application is not loading data correctly.")
+                    logger.info("No files found in any category. Application is not loading data correctly.")
                     return False
 
                 logger.info(f"Server verified running with {len(category_items)} categories and {total_files} total files")
                 return True
 
-            except requests.exceptions.RequestException as e:
-                if attempt < max_retries - 1:
-                    logger.warning(f"Server not responding yet: {str(e)}")
-                    time.sleep(retry_delay)
-                else:
-                    logger.error(f"Failed to verify server: {str(e)}")
-                    return False
+            except requests.RequestException as e:
+                logger.warning(f"Server not responding yet: {str(e)}")
+                time.sleep(retry_delay)
+                continue
+            except Exception as e:
+                logger.error(f"Error verifying server: {str(e)}")
+                return False
 
         return False
 
@@ -204,96 +216,57 @@ class ServerManager:
                 self.start_server()
                 break
 
+    def monitor(self):
+        """Monitor server health."""
+        while True:
+            time.sleep(5)  # Check every 5 seconds
+            if not self.verify_server_running():
+                logger.error("Server health check failed")
+                self.stop_server()
+                break
+                
     def start_server(self):
         """Start the Flask server and verify it's running correctly."""
-        # Check dependencies first
-        if not self.check_dependencies():
-            logger.error("Missing required dependencies. Cannot start server.")
-            return False
+        try:
+            # Kill any existing process on the port
+            if self.is_port_in_use():
+                if not self.kill_process_on_port():
+                    logger.error("Failed to kill existing process")
+                    return False
 
-        # Kill any existing process on the port
-        if not self.kill_process_on_port():
-            logger.error(f"Failed to free up port {self.port}")
-            return False
-
-        # Start the Flask application
-        logger.info(f"Starting server on port {self.port}...")
-        
-        for attempt in range(self.max_retries):
-            try:
-                # Start Flask with output redirection
+            # Start Flask app in a separate process
+            env = os.environ.copy()
+            server_script = str(self.base_dir / 'app.py')
+            
+            # Start the Flask app with output redirection
+            with open(os.devnull, 'w') as devnull:
                 self.server_process = subprocess.Popen(
-                    [sys.executable, 'app.py'],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    bufsize=1,  # Line buffered
-                    universal_newlines=True
+                    [sys.executable, server_script],
+                    env=env,
+                    stdout=devnull,
+                    stderr=devnull,
+                    cwd=str(self.base_dir)
                 )
-                
-                # Start a thread to monitor the output
-                def log_output():
-                    while True:
-                        line = self.server_process.stderr.readline()
-                        if not line and self.server_process.poll() is not None:
-                            break
-                        if line:
-                            logger.error(f"Flask error: {line.strip()}")
-                
-                log_thread = threading.Thread(target=log_output, daemon=True)
-                log_thread.start()
-
-                # Verify the server is running
+            
+            # Start monitoring thread
+            monitor_thread = threading.Thread(target=self.monitor, daemon=True)
+            monitor_thread.start()
+            
+            # Wait for server to start
+            start_time = time.time()
+            while time.time() - start_time < self.startup_timeout:
                 if self.verify_server_running():
-                    # Set up continuous health monitoring
-                    def monitor():
-                        while True:
-                            time.sleep(5)  # Check every 5 seconds
-                            if not self.monitor_server_health():
-                                logger.error("Server health check failed, restarting...")
-                                self.stop_server()
-                                self.start_server()
-                                break
-                    
-                    # Start health monitoring in a separate thread
-                    monitor_thread = threading.Thread(target=monitor, daemon=True)
-                    monitor_thread.start()
-                    
-                    # Start heartbeat check in a separate thread
-                    heartbeat_thread = threading.Thread(target=self.heartbeat_check, daemon=True)
-                    heartbeat_thread.start()
-                    
-                    # Open the browser
-                    url = f"http://127.0.0.1:{self.port}"
-                    logger.info(f"Opening {url} in browser...")
-                    webbrowser.open(url)
-                    logger.info("Server started successfully. Press Ctrl+C to stop.")
+                    logger.info("Server started successfully")
                     return True
-                else:
-                    # Check for startup errors
-                    if self.server_process.poll() is not None:
-                        stdout, stderr = self.server_process.communicate()
-                        logger.error(f"Server failed to start. Error output:\n{stderr}")
-                        if attempt < self.max_retries - 1:
-                            logger.info(f"Retrying... (attempt {attempt + 2}/{self.max_retries})")
-                            time.sleep(2)
-                            continue
-                    else:
-                        self.server_process.terminate()
-                        try:
-                            self.server_process.wait(timeout=3)
-                        except psutil.TimeoutExpired:
-                            self.server_process.kill()
-                            self.server_process.wait()
-            except Exception as e:
-                logger.error(f"Error starting server: {str(e)}")
-                if attempt < self.max_retries - 1:
-                    logger.info(f"Retrying... (attempt {attempt + 2}/{self.max_retries})")
-                    time.sleep(2)
-                    continue
-
-        logger.error("Failed to start server after multiple attempts")
-        return False
+                time.sleep(0.5)
+            
+            logger.error("Failed to start server after multiple attempts")
+            self.stop_server()
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error starting server: {str(e)}")
+            return False
 
     def stop_server(self):
         """Stop the server gracefully."""

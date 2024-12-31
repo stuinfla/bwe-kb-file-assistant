@@ -4,7 +4,7 @@ import json
 from collections import defaultdict
 import re
 import logging
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 import calendar
 
@@ -16,37 +16,62 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class AssistantAnalyzer:
-    def __init__(self, api_key=None, assistant_id=None, vector_store_id=None):
-        """Initialize the analyzer with OpenAI credentials."""
+    def __init__(self, api_key, assistant_id, vector_store_id=None):
+        """Initialize the AssistantAnalyzer."""
         self.limited_mode = False
-        self.api_key = api_key
-        self.assistant_id = assistant_id
-        self.vector_store_id = vector_store_id
-        
         try:
-            if not api_key or not assistant_id or not vector_store_id:
-                logger.warning("Missing OpenAI configuration, running in limited mode")
+            if not api_key or not assistant_id:
+                logger.warning("Missing required OpenAI configuration, running in limited mode")
                 self.limited_mode = True
                 return
-            
+                
             logger.info("Initializing OpenAI client...")
+            self.client = OpenAI(
+                api_key=api_key,
+                base_url="https://api.openai.com/v1"
+            )
+            self.assistant_id = assistant_id
             logger.info(f"Using Assistant ID: {assistant_id}")
+            self.vector_store_id = vector_store_id
             logger.info(f"Using Vector Store ID: {vector_store_id}")
             
-            # Initialize OpenAI client
-            try:
-                self.client = openai.OpenAI(api_key=api_key)
-                # Test the connection
-                self.client.models.list()
-                logger.info("Successfully connected to OpenAI API")
-            except Exception as e:
-                logger.error(f"Failed to connect to OpenAI API: {str(e)}")
-                self.limited_mode = True
-                
+            # Test connection
+            self.client.models.list()
+            logger.info("Successfully connected to OpenAI API")
+            
         except Exception as e:
-            logger.error(f"Failed to initialize OpenAI client: {str(e)}")
+            logger.error(f"Error initializing OpenAI client: {str(e)}", exc_info=True)
             self.limited_mode = True
             
+    def _configure_assistant(self):
+        """Configure the assistant with proper tools and files."""
+        try:
+            # Get all files
+            files = self.client.files.list()
+            assistant_files = [f.id for f in files.data if f.purpose == "assistants"]
+            
+            # Sort files by creation date (newest first) and limit to 20 for code_interpreter
+            sorted_files = sorted(assistant_files, reverse=True)  # Newest first
+            code_interpreter_files = sorted_files[:20]  # Take latest 20 files
+            
+            # Configure tool resources
+            tool_resources = {
+                "code_interpreter": {"file_ids": code_interpreter_files},
+                "file_search": {"file_ids": assistant_files}  # File search can handle more files
+            }
+            
+            # Update assistant with files
+            self.client.beta.assistants.update(
+                self.assistant_id,
+                tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
+                tool_resources=tool_resources
+            )
+            logger.info(f"Successfully configured assistant with {len(code_interpreter_files)} files for code_interpreter and {len(assistant_files)} files for file_search")
+            
+        except Exception as e:
+            logger.error(f"Error configuring assistant: {str(e)}", exc_info=True)
+            raise
+
     def extract_date_from_filename(self, filename):
         """Extract date information from filename."""
         # Look for year-month pattern (e.g., 2023-06, June 2023, 06-2023)
@@ -99,39 +124,26 @@ class AssistantAnalyzer:
     def get_vector_store_files(self):
         """Get list of files from the vector store."""
         if self.limited_mode:
-            # Return sample files in limited mode for testing
-            sample_files = [
-                {
-                    'filename': 'Budget_2023-12.pdf',
-                    'purpose': 'assistants',
-                    'created_at': '2023-12-01',
-                    'bytes': 1024,
-                    'id': 'file-1Nm1QGSx7wGJBjgN9mhuEWPv'
-                },
-                {
-                    'filename': 'Budget_2023-11.pdf',
-                    'purpose': 'assistants',
-                    'created_at': '2023-11-01',
-                    'bytes': 1024,
-                    'id': 'file-AelwhTKBuYAmzcCTJGgySAzI'
-                }
-            ]
-            logger.info(f"Running in limited mode. Returning {len(sample_files)} sample files.")
-            return sample_files
+            logger.warning("Running in limited mode - no files will be returned")
+            return []
             
         try:
-            # List all files
-            files = self.client.files.list()
-            
-            # Get assistant to check its files
+            # Get assistant configuration first
+            logger.info(f"Retrieving assistant {self.assistant_id}")
             assistant = self.client.beta.assistants.retrieve(self.assistant_id)
-            assistant_file_ids = set(assistant.file_ids)
             
-            # Filter for files associated with assistants
-            files_info = []
-            for file in files.data:
-                if file.purpose == "assistants" and file.id in assistant_file_ids:
-                    files_info.append({
+            # Get all files to get their metadata
+            logger.info("Retrieving file list from OpenAI")
+            files = self.client.files.list()
+            files_by_id = {f.id: f for f in files.data}
+            logger.info(f"Retrieved {len(files.data)} total files from OpenAI")
+            
+            # Get files attached to the assistant
+            assistant_files = []
+            for file_id in files_by_id:
+                if files_by_id[file_id].purpose == "assistants":
+                    file = files_by_id[file_id]
+                    assistant_files.append({
                         'filename': file.filename,
                         'purpose': file.purpose,
                         'created_at': datetime.fromtimestamp(file.created_at).strftime('%Y-%m-%d'),
@@ -140,12 +152,13 @@ class AssistantAnalyzer:
                     })
             
             # Sort files chronologically
-            files_info.sort(key=lambda x: datetime.strptime(x['created_at'], '%Y-%m-%d'))
+            assistant_files.sort(key=lambda x: datetime.strptime(x['created_at'], '%Y-%m-%d'))
             
-            logger.info(f"Retrieved {len(files_info)} files from assistant {self.assistant_id}")
-            return files_info
+            logger.info(f"Found {len(assistant_files)} files associated with assistant")
+            return assistant_files
+            
         except Exception as e:
-            logger.error(f"Error retrieving vector store files: {str(e)}")
+            logger.error(f"Error retrieving vector store files: {str(e)}", exc_info=True)
             return []
 
     def get_file_content(self, file_info):

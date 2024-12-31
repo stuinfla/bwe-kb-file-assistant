@@ -19,18 +19,25 @@ load_dotenv()
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
+    handlers=[
+        logging.FileHandler('app.log'),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
-# Completely disable all Flask logging
+# Configure Flask logging
+flask_logger = logging.getLogger('flask.app')
+flask_logger.setLevel(logging.INFO)
+
+# Disable Werkzeug logging
 logging.getLogger('werkzeug').disabled = True
 cli = sys.modules['flask.cli']
 cli.show_server_banner = lambda *x: None
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
-app.logger.disabled = True
+app.logger.setLevel(logging.INFO)
 
 # Configure app paths
 UPLOAD_FOLDER = 'uploads'
@@ -50,12 +57,20 @@ app.config.update(
 )
 
 # Initialize OpenAI client
+api_key = os.getenv('OPENAI_API_KEY')
+assistant_id = os.getenv('OPENAI_ASSISTANT_ID')
+vector_store_id = os.getenv('OPENAI_VECTOR_STORE_ID')
+
+logger.info(f"API Key present: {'Yes' if api_key else 'No'}")
+logger.info(f"Assistant ID: {assistant_id}")
+logger.info(f"Vector Store ID: {vector_store_id}")
+
 analyzer = None
 try:
     analyzer = AssistantAnalyzer(
-        api_key=os.getenv('OPENAI_API_KEY'),
-        assistant_id=os.getenv('OPENAI_ASSISTANT_ID'),
-        vector_store_id=os.getenv('OPENAI_VECTOR_STORE_ID')
+        api_key=api_key,
+        assistant_id=assistant_id,
+        vector_store_id=vector_store_id
     )
 except Exception as e:
     print(f"Failed to initialize AssistantAnalyzer: {str(e)}")
