@@ -4,25 +4,54 @@ A sophisticated document management system built specifically for BWE (Building 
 
 ## Deployment
 
-This application is deployed on Railway.app via Git integration.
+This application uses automated deployment via Railway.app with GitHub integration.
 
-### Deployment Steps
-1. Push code to GitHub repository
-2. Connect GitHub repository to Railway.app
-3. Railway automatically detects Python environment and builds
-4. Environment variables are set in Railway dashboard:
-   - OPENAI_API_KEY
-   - OPENAI_ASSISTANT_ID
-   - OPENAI_VECTOR_STORE_ID
-   - PORT (set by Railway automatically)
+### Automated Deployment Process
+1. **Local Development**
+   ```bash
+   # Start local server with auto-restart
+   python3 manage_server.py
+   ```
+   - Server automatically kills existing processes on port 5002
+   - Opens browser to verify application
+   - Monitors server health every 5 seconds
 
-### Local Development
-1. Clone the repository
-2. Create virtual environment: `python3 -m venv venv`
-3. Activate virtual environment: `source venv/bin/activate`
-4. Install requirements: `pip install -r requirements.txt`
-5. Create .env file with required environment variables
-6. Run server: `python3 manage_server.py`
+2. **Code Changes & Testing**
+   ```bash
+   # After making changes, test locally
+   python3 manage_server.py
+   ```
+   - Server logs in server.log
+   - Application logs in app.log
+   - Auto-verification of server health
+
+3. **Automated Deployment**
+   ```bash
+   # Commit changes
+   git add .
+   git commit -m "Description of changes"
+   git push
+   ```
+   - Railway automatically detects GitHub push
+   - Builds and deploys new version
+   - No manual deployment steps needed
+
+### Railway.app Configuration
+- **GitHub Integration**: Connected to repository
+- **Auto-Deploy**: Enabled for main branch
+- **Environment Variables**:
+  ```
+  OPENAI_API_KEY=your_key
+  OPENAI_ASSISTANT_ID=your_assistant_id
+  OPENAI_VECTOR_STORE_ID=your_vector_store_id
+  PORT=auto_assigned_by_railway
+  ```
+
+### Deployment Verification
+- Railway dashboard shows deployment status
+- Automatic health checks
+- Logs available in Railway dashboard
+- No manual intervention required
 
 ## Features
 
