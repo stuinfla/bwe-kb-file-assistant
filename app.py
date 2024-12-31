@@ -53,27 +53,16 @@ app.config.update(
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max file size
     TEMPLATES_AUTO_RELOAD=True,
     template_folder='templates',  # Explicitly set template folder
-    static_folder='static'       # Explicitly set static folder
+    static_folder='static',       # Explicitly set static folder
+    SECRET_KEY=os.urandom(24)
 )
 
-# Initialize OpenAI client
-api_key = os.getenv('OPENAI_API_KEY')
-assistant_id = os.getenv('OPENAI_ASSISTANT_ID')
-vector_store_id = os.getenv('OPENAI_VECTOR_STORE_ID')
-
-logger.info(f"API Key present: {'Yes' if api_key else 'No'}")
-logger.info(f"Assistant ID: {assistant_id}")
-logger.info(f"Vector Store ID: {vector_store_id}")
-
-analyzer = None
-try:
-    analyzer = AssistantAnalyzer(
-        api_key=api_key,
-        assistant_id=assistant_id,
-        vector_store_id=vector_store_id
-    )
-except Exception as e:
-    print(f"Failed to initialize AssistantAnalyzer: {str(e)}")
+# Initialize OpenAI Assistant
+analyzer = AssistantAnalyzer(
+    api_key=os.getenv('OPENAI_API_KEY'),
+    assistant_id=os.getenv('OPENAI_ASSISTANT_ID'),
+    vector_store_id=os.getenv('OPENAI_VECTOR_STORE_ID')
+)
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'md'}
 
@@ -673,16 +662,28 @@ def delete_category():
 @app.route('/upload_file', methods=['POST'])
 def upload_file():
     """Handle file upload."""
+    is_api_request = request.headers.get('Accept') == 'application/json'
+    logger.info(f"Received file upload request (API: {is_api_request})")
+    
     if 'file' not in request.files:
+        logger.warning("No file in request")
+        if is_api_request:
+            return jsonify({'error': 'No file selected'}), 400
         flash('No file selected', 'warning')
         return redirect(url_for('index'))
         
     file = request.files['file']
     if file.filename == '':
+        logger.warning("Empty filename")
+        if is_api_request:
+            return jsonify({'error': 'No file selected'}), 400
         flash('No file selected', 'warning')
         return redirect(url_for('index'))
         
     if not allowed_file(file.filename):
+        logger.warning(f"File type not allowed: {file.filename}")
+        if is_api_request:
+            return jsonify({'error': 'File type not allowed'}), 400
         flash('File type not allowed', 'warning')
         return redirect(url_for('index'))
         
@@ -690,93 +691,114 @@ def upload_file():
         # Save file locally first
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        logger.info(f"Saving file locally: {file_path}")
         file.save(file_path)
         
         # Upload to OpenAI Assistant
         if analyzer:
+            logger.info("Uploading to OpenAI Assistant...")
             file_info = analyzer.upload_file(file_path)
             if not file_info:
+                logger.error("Failed to get file info from OpenAI")
                 raise Exception("Failed to upload file to OpenAI Assistant")
                 
             # Get file metadata from OpenAI response
             file_id = file_info.id
             created_at = datetime.fromtimestamp(file_info.created_at).strftime("%Y-%m-%d %H:%M:%S")
             filename = file_info.filename  # Use the filename from OpenAI
+            logger.info(f"File uploaded to OpenAI: {file_id}")
             
-            # Show success message
-            flash(f'"{filename}" has been successfully added to the knowledge base', 'success')
+            if not is_api_request:
+                flash(f'"{filename}" has been successfully added to the knowledge base', 'success')
         else:
             # In limited mode, generate a fake file ID
             file_id = str(len(os.listdir(app.config['UPLOAD_FOLDER'])))
             created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            flash('File uploaded in limited mode (not added to knowledge base)', 'info')
+            logger.warning("Operating in limited mode - file not uploaded to OpenAI")
+            if not is_api_request:
+                flash('File uploaded in limited mode (not added to knowledge base)', 'info')
         
         # Categorize the file
+        logger.info("Categorizing file...")
         categories, file_categories = load_categories()
         category = categorize_file(filename, None)  # We're not using content for now
         if category not in categories:
             categories.append(category)
         file_categories[file_id] = category
         save_categories(file_categories)
+        logger.info(f"File categorized as: {category}")
         
         # Delete local file since it's now in OpenAI
         if os.path.exists(file_path):
+            logger.info("Cleaning up local file...")
             os.remove(file_path)
         
+        if is_api_request:
+            response_data = {
+                'success': True,
+                'file_id': file_id,
+                'filename': filename,
+                'category': category,
+                'created_at': created_at
+            }
+            logger.info(f"API Response: {json.dumps(response_data)}")
+            return jsonify(response_data)
         return redirect(url_for('index', category=category))
+        
     except Exception as e:
         # Clean up local file if it exists
         if os.path.exists(file_path):
+            logger.info("Cleaning up local file after error...")
             os.remove(file_path)
         error_msg = str(e)
-        print(f"Error uploading file: {error_msg}")
+        logger.error(f"Error uploading file: {error_msg}", exc_info=True)
+        if is_api_request:
+            return jsonify({'error': error_msg}), 500
         flash(f'Failed to upload file: {error_msg}', 'danger')
         return redirect(url_for('index'))
 
 @app.route('/delete_file/<file_id>', methods=['POST'])
 def delete_file(file_id):
     """Delete a file from both OpenAI Assistant and categories."""
+    is_api_request = request.headers.get('Accept') == 'application/json'
+    
     try:
         # Load categories
         categories, file_categories = load_categories()
         
-        # Verify file exists in categories
+        # Check if file exists in categories
         if file_id not in file_categories:
-            return jsonify({
-                'success': False,
-                'error': 'File not found in categories'
-            }), 404
-            
-        # Get current category
-        category = file_categories[file_id]
+            if is_api_request:
+                return jsonify({'error': 'File not found'}), 404
+            flash('File not found', 'warning')
+            return redirect(url_for('index'))
         
-        # Delete from OpenAI if connected
-        if analyzer and not analyzer.limited_mode:
+        # Delete from OpenAI Assistant
+        if analyzer:
             success = analyzer.delete_file(file_id)
             if not success:
-                return jsonify({
-                    'success': False,
-                    'error': 'Failed to delete file from OpenAI'
-                }), 500
+                raise Exception("Failed to delete file from OpenAI Assistant")
         
         # Remove from categories
-        del file_categories[file_id]
-        if not save_categories(file_categories):
-            return jsonify({
-                'success': False,
-                'error': 'Failed to save categories'
-            }), 500
+        category = file_categories.pop(file_id)
+        save_categories(file_categories)
         
-        return jsonify({
-            'success': True,
-            'message': f'File has been deleted from {category}'
-        })
+        if is_api_request:
+            return jsonify({
+                'success': True,
+                'message': f'File deleted successfully'
+            })
+            
+        flash(f'File has been deleted', 'success')
+        return redirect(url_for('index', category=category))
         
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        error_msg = str(e)
+        print(f"Error deleting file: {error_msg}")
+        if is_api_request:
+            return jsonify({'error': error_msg}), 500
+        flash(f'Failed to delete file: {error_msg}', 'danger')
+        return redirect(url_for('index'))
 
 @app.route('/debug/files')
 def debug_files():

@@ -131,12 +131,45 @@ This application uses automated deployment via Railway.app with GitHub integrati
 
 ## Environment Setup
 
+### Dependencies Installation
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install Node.js dependencies (if needed)
+npm install
+```
+
 ### Required Environment Variables
 ```
 OPENAI_API_KEY=your_api_key
 OPENAI_ASSISTANT_ID=asst_pvAYFhGmPmIDtv2B7jVs8r1g
 OPENAI_VECTOR_STORE_ID=file-qwZcKqbTWnqVcQPCGPqQIZUx
 ```
+
+## Deployment Options
+
+### Railway.app (Primary)
+- Automated deployment via GitHub integration
+- Built-in monitoring and logging
+- Auto-scaling and reliability
+
+### Vercel (Alternative)
+- Alternative deployment option
+- Use `setup_env.sh` for environment configuration
+- Similar automated deployment process
+
+## Testing
+- Automated file operation tests
+- Category integrity verification
+- Server health monitoring
+- End-to-end functionality tests
+
+## Limitations
+- Maximum file size: 16MB
+- Supported file types: txt, pdf, doc, docx, xls, xlsx, csv, md
+- Requires stable internet connection
+- OpenAI API rate limits apply
 
 ## Maintenance
 
@@ -179,12 +212,6 @@ OPENAI_VECTOR_STORE_ID=file-qwZcKqbTWnqVcQPCGPqQIZUx
 - Monitor the logs for any issues
 - Keep environment variables secure
 - Regular system verification checks
-
-## Limitations
-- Maximum file size: 16MB
-- Supported file types: PDF, DOC, DOCX, TXT
-- Requires stable internet connection
-- OpenAI API rate limits apply
 
 ## Support
 For issues or questions, please check:

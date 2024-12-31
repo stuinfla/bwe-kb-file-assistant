@@ -1,0 +1,37 @@
+2024-12-31 04:23:45,887 - __main__ - INFO - Uploading file: test_data/sample.txt
+2024-12-31 04:23:46,814 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 04:23:47,051 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files/file-9Vw8c9TN5jNkRTXhXgChWV "HTTP/1.1 200 OK"
+2024-12-31 04:23:47,052 - __main__ - INFO - File processed successfully: file-9Vw8c9TN5jNkRTXhXgChWV
+2024-12-31 04:23:48,276 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/vector_stores "HTTP/1.1 200 OK"
+2024-12-31 04:23:48,724 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/vector_stores/vs_3nvziEwTNK60BnQpPXMOqWms "HTTP/1.1 200 OK"
+2024-12-31 04:23:48,726 - __main__ - INFO - Vector store ready: vs_3nvziEwTNK60BnQpPXMOqWms
+2024-12-31 04:23:49,639 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 04:23:49,644 - __main__ - INFO - File file-9Vw8c9TN5jNkRTXhXgChWV successfully added to assistant
+2024-12-31 04:23:49,929 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 04:23:50,390 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files?after=file-wJozllCU9JKLqTRFJ8Q8GIW5 "HTTP/1.1 200 OK"
+2024-12-31 04:23:50,390 - __main__ - INFO - Deleting file: file-9Vw8c9TN5jNkRTXhXgChWV
+2024-12-31 04:23:50,807 - httpx - INFO - HTTP Request: DELETE https://api.openai.com/v1/files/file-9Vw8c9TN5jNkRTXhXgChWV "HTTP/1.1 200 OK"
+2024-12-31 04:23:51,158 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files/file-9Vw8c9TN5jNkRTXhXgChWV "HTTP/1.1 404 Not Found"
+2024-12-31 04:23:51,160 - __main__ - ERROR - Unexpected error checking file deletion: Error code: 404 - {'error': {'message': 'No such File object: file-9Vw8c9TN5jNkRTXhXgChWV', 'type': 'invalid_request_error', 'param': 'id', 'code': None}}
+2024-12-31 04:23:51,160 - __main__ - ERROR - File deletion test failed
+2024-12-31 04:24:14,404 - __main__ - INFO - Uploading file: test_data/sample.txt
+2024-12-31 04:24:15,295 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 04:24:15,511 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files/file-3te3xgD3XML2QroGYyJGjB "HTTP/1.1 200 OK"
+2024-12-31 04:24:15,512 - __main__ - INFO - File processed successfully: file-3te3xgD3XML2QroGYyJGjB
+2024-12-31 04:24:16,683 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/vector_stores "HTTP/1.1 200 OK"
+2024-12-31 04:24:17,359 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/vector_stores/vs_amCfOnWi7IWA5Il5mNzDJkTF "HTTP/1.1 200 OK"
+2024-12-31 04:24:17,360 - __main__ - INFO - Vector store ready: vs_amCfOnWi7IWA5Il5mNzDJkTF
+2024-12-31 04:24:18,291 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/assistants/asst_pvAYFhGmPmIDtv2B7jVs8r1g "HTTP/1.1 200 OK"
+2024-12-31 04:24:18,299 - __main__ - INFO - File file-3te3xgD3XML2QroGYyJGjB successfully added to assistant
+2024-12-31 04:24:18,710 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files "HTTP/1.1 200 OK"
+2024-12-31 04:24:19,128 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files?after=file-wJozllCU9JKLqTRFJ8Q8GIW5 "HTTP/1.1 200 OK"
+2024-12-31 04:24:20,536 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/vector_stores "HTTP/1.1 200 OK"
+2024-12-31 04:24:20,542 - __main__ - INFO - Deleting file: file-3te3xgD3XML2QroGYyJGjB
+2024-12-31 04:24:21,168 - httpx - INFO - HTTP Request: DELETE https://api.openai.com/v1/files/file-3te3xgD3XML2QroGYyJGjB "HTTP/1.1 200 OK"
+2024-12-31 04:24:21,169 - __main__ - INFO - Deleting vector store: vs_amCfOnWi7IWA5Il5mNzDJkTF
+2024-12-31 04:24:23,321 - httpx - INFO - HTTP Request: DELETE https://api.openai.com/v1/vector_stores/vs_amCfOnWi7IWA5Il5mNzDJkTF "HTTP/1.1 200 OK"
+2024-12-31 04:24:23,537 - httpx - INFO - HTTP Request: GET https://api.openai.com/v1/files/file-3te3xgD3XML2QroGYyJGjB "HTTP/1.1 404 Not Found"
+2024-12-31 04:24:23,537 - __main__ - INFO - File file-3te3xgD3XML2QroGYyJGjB successfully deleted
+2024-12-31 04:24:23,537 - __main__ - INFO - All file operations tests passed successfully
+2024-12-31 04:24:23,817 - httpx - INFO - HTTP Request: DELETE https://api.openai.com/v1/files/file-3te3xgD3XML2QroGYyJGjB "HTTP/1.1 404 Not Found"
+2024-12-31 04:24:24,181 - httpx - INFO - HTTP Request: DELETE https://api.openai.com/v1/vector_stores/vs_amCfOnWi7IWA5Il5mNzDJkTF "HTTP/1.1 404 Not Found"

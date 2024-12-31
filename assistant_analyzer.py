@@ -7,6 +7,7 @@ import logging
 from openai import OpenAI
 from dotenv import load_dotenv
 import calendar
+import time
 
 # Configure logging
 logging.basicConfig(
@@ -28,7 +29,7 @@ class AssistantAnalyzer:
             logger.info("Initializing OpenAI client...")
             self.client = OpenAI(
                 api_key=api_key,
-                base_url="https://api.openai.com/v1"
+                default_headers={"OpenAI-Beta": "assistants=v2"}
             )
             self.assistant_id = assistant_id
             logger.info(f"Using Assistant ID: {assistant_id}")
@@ -44,29 +45,51 @@ class AssistantAnalyzer:
             self.limited_mode = True
             
     def _configure_assistant(self):
-        """Configure the assistant with proper tools and files."""
+        """Configure the assistant with the latest file list."""
+        if self.limited_mode:
+            return
+
         try:
-            # Get all files
-            files = self.client.files.list()
-            assistant_files = [f.id for f in files.data if f.purpose == "assistants"]
+            # Get current file list
+            files = self.get_file_list()
+            logger.info(f"Retrieved {len(files)} total files from OpenAI")
             
-            # Sort files by creation date (newest first) and limit to 20 for code_interpreter
-            sorted_files = sorted(assistant_files, reverse=True)  # Newest first
-            code_interpreter_files = sorted_files[:20]  # Take latest 20 files
+            # Get current assistant configuration
+            assistant = self.client.beta.assistants.retrieve(self.assistant_id)
+            logger.info(f"Assistant configuration: {assistant}")
             
-            # Configure tool resources
-            tool_resources = {
-                "code_interpreter": {"file_ids": code_interpreter_files},
-                "file_search": {"file_ids": assistant_files}  # File search can handle more files
-            }
+            # Get current tool resources
+            tool_resources = getattr(assistant, 'tool_resources', None)
+            logger.info(f"Current tool resources: {tool_resources}")
             
-            # Update assistant with files
+            # Get current vector store IDs
+            vector_store_ids = []
+            if tool_resources and hasattr(tool_resources, 'file_search'):
+                file_search = tool_resources.file_search
+                if hasattr(file_search, 'vector_store_ids'):
+                    vector_store_ids = file_search.vector_store_ids
+            
+            # Get current file IDs for code interpreter
+            code_interpreter_file_ids = []
+            if tool_resources and hasattr(tool_resources, 'code_interpreter'):
+                code_interpreter = tool_resources.code_interpreter
+                if hasattr(code_interpreter, 'file_ids'):
+                    code_interpreter_file_ids = code_interpreter.file_ids
+            
+            # Update assistant configuration
             self.client.beta.assistants.update(
-                self.assistant_id,
+                assistant_id=self.assistant_id,
                 tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
-                tool_resources=tool_resources
+                tool_resources={
+                    "code_interpreter": {
+                        "file_ids": code_interpreter_file_ids
+                    },
+                    "file_search": {
+                        "vector_store_ids": vector_store_ids
+                    }
+                }
             )
-            logger.info(f"Successfully configured assistant with {len(code_interpreter_files)} files for code_interpreter and {len(assistant_files)} files for file_search")
+            logger.info("Successfully updated assistant configuration")
             
         except Exception as e:
             logger.error(f"Error configuring assistant: {str(e)}", exc_info=True)
@@ -121,7 +144,7 @@ class AssistantAnalyzer:
                     )
         return gaps
         
-    def get_vector_store_files(self):
+    def get_file_list(self):
         """Get list of files from the vector store."""
         if self.limited_mode:
             logger.warning("Running in limited mode - no files will be returned")
@@ -178,50 +201,85 @@ class AssistantAnalyzer:
             
         try:
             # Upload file
+            logger.info(f"Attempting to upload file: {file_path}")
             with open(file_path, 'rb') as file:
+                logger.info("File opened successfully, creating OpenAI file...")
                 uploaded_file = self.client.files.create(
                     file=file,
                     purpose='assistants'
                 )
+                logger.info(f"File created in OpenAI with ID: {uploaded_file.id}")
             
             # Add file to assistant
             if uploaded_file:
-                logger.info(f"File uploaded successfully: {uploaded_file.id}")
-                self.client.beta.assistants.files.create(
+                logger.info(f"Adding file {uploaded_file.id} to assistant {self.assistant_id}...")
+                
+                # Get current assistant configuration
+                assistant = self.client.beta.assistants.retrieve(self.assistant_id)
+                logger.info(f"Assistant configuration: {assistant}")
+                
+                # Get current tool resources
+                tool_resources = getattr(assistant, 'tool_resources', None)
+                logger.info(f"Current tool resources: {tool_resources}")
+                
+                # Get current files from code_interpreter
+                current_files = []
+                if tool_resources and hasattr(tool_resources, 'code_interpreter'):
+                    code_interpreter = tool_resources.code_interpreter
+                    if hasattr(code_interpreter, 'file_ids'):
+                        current_files = code_interpreter.file_ids
+                
+                logger.info(f"Current files: {current_files}")
+                
+                # Add new file to list if not already present
+                if uploaded_file.id not in current_files:
+                    current_files.append(uploaded_file.id)
+                
+                # Update assistant with new file list
+                logger.info("Updating assistant with new configuration...")
+                updated_assistant = self.client.beta.assistants.update(
                     assistant_id=self.assistant_id,
-                    file_id=uploaded_file.id
+                    tools=[{"type": "code_interpreter"}, {"type": "file_search"}],
+                    tool_resources={
+                        "code_interpreter": {
+                            "file_ids": current_files
+                        }
+                    }
                 )
-                return uploaded_file.id
+                logger.info(f"Updated assistant configuration: {updated_assistant}")
+                
+                # Update assistant configuration
+                self._configure_assistant()
+                return uploaded_file
             return None
+            
         except Exception as e:
-            logger.error(f"Error uploading file: {str(e)}")
+            logger.error(f"Error uploading file: {str(e)}", exc_info=True)
             return None
 
     def delete_file(self, file_id):
-        """Delete a file from the assistant."""
-        if self.limited_mode:
-            logger.warning("Cannot delete file in limited mode")
-            return False
-            
+        """Delete a file from OpenAI."""
         try:
-            # First remove from assistant
-            self.client.beta.assistants.files.delete(
-                assistant_id=self.assistant_id,
-                file_id=file_id
-            )
+            # Delete the file
+            logger.info(f"Attempting to delete file {file_id}")
+            if isinstance(file_id, dict) and 'id' in file_id:
+                file_id = file_id['id']
+            elif hasattr(file_id, 'id'):
+                file_id = file_id.id
+            self.client.files.delete(file_id=file_id)
+            logger.info(f"Successfully deleted file {file_id}")
             
-            # Then delete the file itself
-            self.client.files.delete(file_id)
+            # Update assistant configuration
+            self._configure_assistant()
             
-            logger.info(f"Successfully deleted file: {file_id}")
             return True
         except Exception as e:
-            logger.error(f"Error deleting file: {str(e)}")
+            logger.error(f"Error deleting file: {str(e)}", exc_info=True)
             return False
 
     def analyze_files(self):
         """Analyze the files in the vector store."""
-        files = self.get_vector_store_files()
+        files = self.get_file_list()
         
         # Print overall stats
         print("\n=== Vector Store Files Analysis ===\n")
@@ -264,6 +322,160 @@ class AssistantAnalyzer:
                 categories['Other'].append(file)
         
         return categories
+
+    def create_thread(self):
+        """Create a new thread for conversation."""
+        if self.limited_mode:
+            logger.warning("Cannot create thread in limited mode")
+            return None
+            
+        try:
+            thread = self.client.beta.threads.create()
+            logger.info(f"Created new thread with ID: {thread.id}")
+            return thread
+        except Exception as e:
+            logger.error(f"Error creating thread: {str(e)}")
+            return None
+
+    def add_message_to_thread(self, thread_id, content, file_ids=None):
+        """Add a message to an existing thread."""
+        if self.limited_mode:
+            logger.warning("Cannot add message in limited mode")
+            return None
+            
+        try:
+            message_params = {
+                "role": "user",
+                "content": content
+            }
+            
+            if file_ids:
+                message_params["attachments"] = [
+                    {"file_id": file_id, "tools": [{"type": "code_interpreter"}]} 
+                    for file_id in file_ids
+                ]
+            
+            message = self.client.beta.threads.messages.create(
+                thread_id=thread_id,
+                **message_params
+            )
+            logger.info(f"Added message to thread {thread_id}")
+            return message
+        except Exception as e:
+            logger.error(f"Error adding message to thread: {str(e)}")
+            return None
+
+    def run_assistant(self, thread_id, instructions=None):
+        """Run the assistant on a thread."""
+        if self.limited_mode:
+            logger.warning("Cannot run assistant in limited mode")
+            return None
+            
+        try:
+            run_params = {
+                "assistant_id": self.assistant_id,
+                "thread_id": thread_id
+            }
+            
+            if instructions:
+                run_params["instructions"] = instructions
+            
+            run = self.client.beta.threads.runs.create(**run_params)
+            logger.info(f"Started run {run.id} on thread {thread_id}")
+            return run
+        except Exception as e:
+            logger.error(f"Error starting run: {str(e)}")
+            return None
+
+    def wait_for_run(self, thread_id, run_id, timeout=300):
+        """Wait for a run to complete and return the final status."""
+        if self.limited_mode:
+            logger.warning("Cannot wait for run in limited mode")
+            return None
+            
+        try:
+            start_time = datetime.now()
+            while True:
+                run = self.client.beta.threads.runs.retrieve(
+                    thread_id=thread_id,
+                    run_id=run_id
+                )
+                
+                if run.status in ['completed', 'failed', 'expired', 'cancelled']:
+                    logger.info(f"Run {run_id} finished with status: {run.status}")
+                    return run
+                
+                # Check for timeout
+                if (datetime.now() - start_time).total_seconds() > timeout:
+                    logger.warning(f"Run {run_id} timed out after {timeout} seconds")
+                    return run
+                
+                # Check for required actions
+                if run.status == 'requires_action':
+                    logger.info(f"Run {run_id} requires action")
+                    return run
+                
+                time.sleep(1)  # Wait before checking again
+                
+        except Exception as e:
+            logger.error(f"Error waiting for run: {str(e)}")
+            return None
+
+    def get_messages(self, thread_id, limit=100):
+        """Get messages from a thread."""
+        if self.limited_mode:
+            logger.warning("Cannot get messages in limited mode")
+            return []
+            
+        try:
+            messages = self.client.beta.threads.messages.list(
+                thread_id=thread_id,
+                limit=limit
+            )
+            return messages.data
+        except Exception as e:
+            logger.error(f"Error getting messages: {str(e)}")
+            return []
+
+    def process_message_annotations(self, message):
+        """Process annotations in a message."""
+        try:
+            if not message.content or not message.content[0].text:
+                return ""
+                
+            message_content = message.content[0].text
+            annotations = message_content.annotations
+            citations = []
+            
+            # Process annotations
+            for index, annotation in enumerate(annotations):
+                # Replace the text with a footnote
+                message_content.value = message_content.value.replace(
+                    annotation.text, 
+                    f' [{index}]'
+                )
+                
+                # Gather citations
+                if hasattr(annotation, 'file_citation'):
+                    file = self.client.files.retrieve(annotation.file_citation.file_id)
+                    citations.append(
+                        f'[{index}] {annotation.file_citation.quote} from {file.filename}'
+                    )
+                elif hasattr(annotation, 'file_path'):
+                    file = self.client.files.retrieve(annotation.file_path.file_id)
+                    citations.append(
+                        f'[{index}] Generated file: {file.filename}'
+                    )
+            
+            # Add footnotes to the message
+            if citations:
+                message_content.value += '\n\n' + '\n'.join(citations)
+            
+            return message_content.value
+            
+        except Exception as e:
+            logger.error(f"Error processing message annotations: {str(e)}")
+            return ""
 
 if __name__ == "__main__":
     try:
